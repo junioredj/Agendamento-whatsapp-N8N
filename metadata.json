@@ -1,0 +1,8 @@
+{
+  "name": "SmartSchedule AI",
+  "description": "Uma plataforma SaaS completa para agendamento automático via WhatsApp utilizando Inteligência Artificial, focada em barbearias e salões de beleza.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
