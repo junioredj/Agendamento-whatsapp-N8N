@@ -1,6 +1,5 @@
 
 import axios from 'axios';
-// Import GoogleGenAI from @google/genai as per guidelines
 import { GoogleGenAI } from "@google/genai";
 
 // Configuração da instância do Axios para o seu backend Laravel
@@ -26,15 +25,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Se o Laravel retornar 401, a sessão caiu ou o token é inválido
     if (error.response?.status === 401) {
       console.warn('Sessão expirada ou inválida no Laravel Sanctum.');
-      
-      // Limpa os dados de autenticação locais
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user_name');
-      
-      // Redireciona para o login apenas se não estiver já na página de login
       if (!window.location.hash.includes('/login')) {
         window.location.href = '#/login';
       }
@@ -59,17 +53,18 @@ export const createStripeCheckout = async () => {
 };
 
 /**
- * Fix: Gemini AI Integration
+ * Gemini AI Integration
  * Generates smart business insights based on dashboard statistics
  */
 export const getAIInsights = async (stats: any) => {
   try {
+    // A API KEY é obtida diretamente do process.env.API_KEY injetado
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Você é um consultor especializado para donos de barbearia. Analise estes números atuais: ${JSON.stringify(stats)}. 
       Dê 3 dicas curtas, práticas e motivadoras para aumentar o faturamento hoje. 
-      Use um tom amigável e direto.`,
+      Use um tom amigável e direto em português do Brasil.`,
     });
     return response.text;
   } catch (error) {
