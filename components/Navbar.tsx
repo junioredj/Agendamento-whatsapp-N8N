@@ -1,10 +1,7 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to resolve missing member error
-import * as ReactRouter from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Sparkles, Menu, X } from 'lucide-react';
-
-const { Link } = ReactRouter;
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);

@@ -1,7 +1,6 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to resolve missing member errors
-import * as ReactRouter from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Blocks, 
@@ -12,8 +11,6 @@ import {
   CalendarX,
   Scissors
 } from 'lucide-react';
-
-const { Link, Outlet, useLocation } = ReactRouter;
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
@@ -90,13 +87,16 @@ const DashboardLayout: React.FC = () => {
               </div>
             </div>
           </Link>
-          <Link 
-            to="/" 
-            className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+          <button 
+            onClick={() => {
+              localStorage.removeItem('auth_token');
+              window.location.href = '#/login';
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
           >
             <LogOut size={20} />
             <span className="font-medium">Sair</span>
-          </Link>
+          </button>
         </div>
       </aside>
 

@@ -1,11 +1,8 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to resolve missing member errors
-import * as ReactRouter from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowLeft } from 'lucide-react';
 import { api } from '../services/api';
-
-const { Link, useNavigate } = ReactRouter;
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,19 +23,13 @@ const RegisterPage: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      const response = await api.post('/auth/register', form);
-
-      console.log('Resposta da API:', response.data);
-
+      await api.post('/auth/register', form);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Erro ao registrar:', error.response?.data || error);
     }
   };
-
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
@@ -117,10 +108,6 @@ const RegisterPage: React.FC = () => {
             </button>
           </div>
         </form>
-
-        <div className="mt-8 text-center text-xs text-slate-400">
-          Ao se registrar, você concorda com nossos <a href="#" className="underline">Termos de Uso</a> e <a href="#" className="underline">Política de Privacidade</a>.
-        </div>
 
         <p className="text-center mt-8 text-slate-600">
           Já tem uma conta? <Link to="/login" className="text-indigo-600 font-bold hover:text-indigo-700">Entrar</Link>

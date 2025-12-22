@@ -1,7 +1,6 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to handle environment-specific export issues
-import * as ReactRouter from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
@@ -14,11 +13,9 @@ import ServicesPage from './pages/ServicesPage';
 import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
-const { BrowserRouter, Routes, Route, Navigate } = ReactRouter;
-
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/precos" element={<PricingPage />} />
@@ -42,7 +39,7 @@ const App: React.FC = () => {
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 

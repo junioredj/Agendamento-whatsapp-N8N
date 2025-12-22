@@ -1,12 +1,9 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to resolve missing member error
-import * as ReactRouter from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Check, Sparkles, Zap, ArrowRight, Loader2 } from 'lucide-react';
 import { createStripeCheckout } from '../services/api';
-
-const { useNavigate } = ReactRouter;
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,7 +12,6 @@ const PricingPage: React.FC = () => {
 
   const handleSubscribe = async () => {
     if (!isLoggedIn) {
-      // Redireciona para login informando que deve voltar para preços
       navigate('/login?redirectTo=/precos');
       return;
     }
@@ -86,37 +82,8 @@ const PricingPage: React.FC = () => {
             </button>
             
             <div className="mt-8 flex items-center justify-center gap-4 text-slate-400">
-               <div className="flex -space-x-2">
-                 {[1,2,3].map(i => (
-                   <div key={i} className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-slate-500">U{i}</div>
-                 ))}
-               </div>
                <span className="text-xs font-bold uppercase tracking-widest">+500 barbearias ativas</span>
             </div>
-          </div>
-        </div>
-
-        <div className="mt-24 grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Zap size={24} />
-            </div>
-            <h4 className="font-bold text-slate-800 mb-2">Ativação Instantânea</h4>
-            <p className="text-slate-500 text-sm">Pague e comece a configurar seu robô no mesmo minuto.</p>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Check size={24} />
-            </div>
-            <h4 className="font-bold text-slate-800 mb-2">Pagamento Seguro</h4>
-            <p className="text-slate-500 text-sm">Processado pelo Stripe, a plataforma de pagamentos mais segura do mundo.</p>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Sparkles size={24} />
-            </div>
-            <h4 className="font-bold text-slate-800 mb-2">Suporte 24/7</h4>
-            <p className="text-slate-500 text-sm">Nossa equipe e nossa própria IA estão prontas para te ajudar.</p>
           </div>
         </div>
       </div>

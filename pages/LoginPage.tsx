@@ -1,11 +1,8 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to resolve missing member errors
-import * as ReactRouter from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Sparkles, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
-
-const { Link, useNavigate, useSearchParams } = ReactRouter;
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,7 +21,6 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      // Tentativa de conexão real com o backend
       const response = await api.post('/auth/login', { email, password });
       
       if (response.data.token) {
@@ -34,14 +30,9 @@ const LoginPage: React.FC = () => {
       
       navigate(redirectTo);
     } catch (err: any) {
-      console.error("Erro no login:", err);
-
-      // Se for um erro de rede (backend não encontrado), entramos no Modo Demo
       if (err.message === "Network Error" || !err.response) {
         setIsDemo(true);
         setError('Servidor API offline. Entrando em modo de demonstração...');
-        
-        // Simulação de login bem sucedido para testes de interface
         setTimeout(() => {
           localStorage.setItem('auth_token', 'demo-token-123');
           localStorage.setItem('user_name', 'Barbeiro de Teste');
