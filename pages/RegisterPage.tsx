@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const [form, setForm] = React.useState({
     name: '',
@@ -23,11 +25,31 @@ const RegisterPage: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
+
     try {
-      await api.post('/auth/register', form);
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Erro ao registrar:', error.response?.data || error);
+      const response = await api.post('/auth/register', form);
+      
+      // Se o backend já retorna o token no registro (boa prática), logamos o usuário
+      if (response.data.token || response.data.access_token) {
+        localStorage.setItem('auth_token', response.data.token || response.data.access_token);
+        localStorage.setItem('user_name', response.data.user?.name || form.name);
+        navigate('/dashboard');
+      } else {
+        // Caso o backend não retorne o token, enviamos para o login
+        alert("Conta criada com sucesso! Por favor, faça login.");
+        navigate('/login');
+      }
+    } catch (err: any) {
+      console.error('Erro ao registrar:', err);
+      if (err.response) {
+        setError(err.response.data.message || 'Erro ao criar conta. Verifique os dados.');
+      } else {
+        setError('Servidor indisponível no momento.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,8 +68,15 @@ const RegisterPage: React.FC = () => {
           <p className="text-slate-500 mt-2">Comece a automatizar seus agendamentos em 5 minutos.</p>
         </div>
 
+        {error && (
+          <div className="mb-6 p-4 rounded-xl text-sm font-medium border bg-red-50 text-red-600 border-red-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-3">
+            <AlertCircle className="shrink-0" size={18} />
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleRegister} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Nome</label>
               <input
@@ -57,11 +86,11 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                placeholder="João"
+                placeholder="João Silva"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Empresa</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Nome da Barbearia</label>
               <input
                 type="text"
                 name="company"
@@ -69,7 +98,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
-                placeholder="Barbearia do João"
+                placeholder="Barbearia Estilo"
               />
             </div>
           </div>
@@ -93,6 +122,7 @@ const RegisterPage: React.FC = () => {
               value={form.password}
               onChange={handleChange}
               required
+              minLength={8}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               placeholder="••••••••"
             />
@@ -102,9 +132,10 @@ const RegisterPage: React.FC = () => {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]"
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              Criar minha conta agora
+              {loading ? <Loader2 className="animate-spin" /> : 'Criar minha conta agora'}
             </button>
           </div>
         </form>

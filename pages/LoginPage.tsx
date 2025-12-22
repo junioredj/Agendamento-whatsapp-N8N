@@ -1,115 +1,118 @@
 
-import React from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Sparkles, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
-import { api } from '../services/api';
+import React from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Sparkles, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { api, fetchCsrfToken } from "../services/api";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
-  const [isDemo, setIsDemo] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
+  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError(null);
 
     try {
-      const response = await api.post('/auth/login', { email, password });
-      
+      // 1. Handshake do Cookie (Obrigatório)
+      await fetchCsrfToken();
+
+      // 2. Tentar Login
+      // Se você usa Laravel Fortify ou Breeze, o endpoint é /login (WEB)
+      // Se criou manualmente na API, pode ser /api/login
+      // Ajustado para /login que é o mais comum para autenticação baseada em sessão (cookies)
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
+
+      // 3. Sucesso
       if (response.data.token) {
-        localStorage.setItem('auth_token', response.data.token);
-        localStorage.setItem('user_name', response.data.user?.name || 'Usuário');
+        localStorage.setItem("auth_token", response.data.token);
       }
       
+      const userName = response.data.user?.name || email.split("@")[0];
+      localStorage.setItem("user_name", userName);
+
       navigate(redirectTo);
     } catch (err: any) {
-      if (err.message === "Network Error" || !err.response) {
-        setIsDemo(true);
-        setError('Servidor API offline. Entrando em modo de demonstração...');
-        setTimeout(() => {
-          localStorage.setItem('auth_token', 'demo-token-123');
-          localStorage.setItem('user_name', 'Barbeiro de Teste');
-          navigate(redirectTo);
-        }, 1500);
+      console.error("Erro na requisição:", err);
+      
+      if (err.code === "ERR_NETWORK") {
+        setError("Erro de rede: O servidor está offline ou há um erro de CORS no Laravel.");
       } else {
-        setError(err.response?.data?.message || 'E-mail ou senha incorretos.');
+        setError(
+          err.response?.data?.message || 
+          err.response?.data?.errors?.email?.[0] ||
+          "E-mail ou senha incorretos."
+        );
       }
     } finally {
-      if (!isDemo) setLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <Link to="/" className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors">
-        <ArrowLeft size={20} /> Voltar ao início
+      <Link to="/" className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors group">
+        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+        Voltar ao início
       </Link>
 
-      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
+      <div className="w-full max-w-md bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-300">
         <div className="text-center mb-10">
-          <div className="inline-block p-3 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-100">
+          <div className="inline-block p-4 bg-indigo-600 rounded-2xl mb-4 shadow-lg shadow-indigo-100">
             <Sparkles className="text-white" size={32} />
           </div>
-          <h1 className="text-3xl font-bold">Bem-vindo de volta!</h1>
-          <p className="text-slate-500 mt-2">
-            {searchParams.get('redirectTo') 
-              ? 'Faça login para concluir sua assinatura.' 
-              : 'Entre na sua conta para gerenciar seu salão.'}
-          </p>
+          <h1 className="text-3xl font-bold text-slate-900">Login</h1>
+          <p className="text-slate-500 mt-2">Identificamos um erro de conexão. Tente novamente após ajustar o backend.</p>
         </div>
 
         {error && (
-          <div className={`mb-6 p-4 rounded-xl text-sm font-medium border animate-in fade-in slide-in-from-top-2 flex items-center gap-3 ${
-            isDemo ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-red-50 text-red-600 border-red-100'
-          }`}>
-            {isDemo ? <Loader2 className="animate-spin shrink-0" size={18} /> : <AlertCircle className="shrink-0" size={18} />}
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-start gap-3 text-sm">
+            <AlertCircle className="shrink-0" size={18} />
+            <p className="font-medium">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Seu E-mail</label>
-            <input 
-              type="email" 
+            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">E-mail</label>
+            <input
+              type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-50/50"
               placeholder="seu@email.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Sua Senha</label>
-            <input 
-              type="password" 
+            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Senha</label>
+            <input
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-50/50"
               placeholder="••••••••"
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
+            className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 shadow-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 text-lg"
           >
-            {loading ? <Loader2 className="animate-spin" /> : 'Entrar no Sistema'}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Entrar"}
           </button>
         </form>
-
-        <p className="text-center mt-8 text-slate-600">
-          Não tem uma conta? <Link to={`/registrar?redirectTo=${redirectTo}`} className="text-indigo-600 font-bold hover:text-indigo-700">Crie agora</Link>
-        </p>
       </div>
     </div>
   );

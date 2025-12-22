@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Blocks, 
@@ -14,8 +14,15 @@ import {
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_name');
+    navigate('/login');
+  };
 
   return (
     <div className="min-h-screen flex bg-slate-50">
@@ -88,10 +95,7 @@ const DashboardLayout: React.FC = () => {
             </div>
           </Link>
           <button 
-            onClick={() => {
-              localStorage.removeItem('auth_token');
-              window.location.href = '#/login';
-            }}
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
           >
             <LogOut size={20} />
