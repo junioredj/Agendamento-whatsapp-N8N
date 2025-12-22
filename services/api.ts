@@ -1,7 +1,9 @@
 
 import axios from 'axios';
+// Import GoogleGenAI from @google/genai as per guidelines
+import { GoogleGenAI } from "@google/genai";
 
-// Configuração da instância do Axios para o backend
+// Configuração da instância do Axios para o seu backend Laravel
 export const api = axios.create({
   baseURL: 'http://127.0.0.1:8000/api',
   withCredentials: true,
@@ -11,7 +13,7 @@ export const api = axios.create({
   }
 });
 
-// Interceptor para injetar o token em todas as requisições
+// Interceptor de Requisição: Injeta o Bearer Token do Sanctum
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
   if (token) {
@@ -20,13 +22,22 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Exemplo de interceptor para tratar erros globais
+// Interceptor de Resposta: Trata erros 401 (Não autorizado/Token expirado)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Se o Laravel retornar 401, a sessão caiu ou o token é inválido
     if (error.response?.status === 401) {
-      console.error('Sessão expirada. Redirecionando...');
+      console.warn('Sessão expirada ou inválida no Laravel Sanctum.');
+      
+      // Limpa os dados de autenticação locais
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('user_name');
+      
+      // Redireciona para o login apenas se não estiver já na página de login
+      if (!window.location.hash.includes('/login')) {
+        window.location.href = '#/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -38,12 +49,31 @@ api.interceptors.response.use(
 export const createStripeCheckout = async () => {
   try {
     const response = await api.post('/payments/create-checkout-session');
-    // O backend deve retornar a URL do checkout do Stripe
     if (response.data.url) {
       window.location.href = response.data.url;
     }
   } catch (error) {
     console.error("Erro ao iniciar Stripe Checkout:", error);
     alert("Erro ao processar pagamento. Tente novamente mais tarde.");
+  }
+};
+
+/**
+ * Fix: Gemini AI Integration
+ * Generates smart business insights based on dashboard statistics
+ */
+export const getAIInsights = async (stats: any) => {
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Você é um consultor especializado para donos de barbearia. Analise estes números atuais: ${JSON.stringify(stats)}. 
+      Dê 3 dicas curtas, práticas e motivadoras para aumentar o faturamento hoje. 
+      Use um tom amigável e direto.`,
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Erro ao obter insights da IA:", error);
+    return "Mantenha o foco no atendimento de qualidade para garantir a fidelidade dos seus clientes hoje!";
   }
 };

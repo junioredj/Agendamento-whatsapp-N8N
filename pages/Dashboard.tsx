@@ -8,7 +8,9 @@ import {
   Clock,
   MoreVertical,
   Info,
-  Loader2
+  Loader2,
+  Sparkles,
+  Bot
 } from 'lucide-react';
 import { 
   XAxis, 
@@ -19,7 +21,7 @@ import {
   AreaChart, 
   Area 
 } from 'recharts';
-import { api } from '../services/api';
+import { api, getAIInsights } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const [showAll, setShowAll] = React.useState(false);
@@ -27,6 +29,8 @@ const Dashboard: React.FC = () => {
   const [stats, setStats] = React.useState<any[]>([]);
   const [appointments, setAppointments] = React.useState<any[]>([]);
   const [chartData, setChartData] = React.useState<any[]>([]);
+  const [aiInsights, setAiInsights] = React.useState<string>("");
+  const [aiLoading, setAiLoading] = React.useState<boolean>(false);
 
   const fetchData = async () => {
     try {
@@ -37,7 +41,7 @@ const Dashboard: React.FC = () => {
         api.get('/dashboard/revenue-chart')
       ]);
 
-      setStats([
+      const statsData = [
         { 
           title: "Agendamentos Hoje", 
           count: statsRes.data.todayCount, 
@@ -65,16 +69,20 @@ const Dashboard: React.FC = () => {
           icon: <TrendingUp size={24} />,
           hasEstimatedTooltip: false
         }
-      ]);
+      ];
+      setStats(statsData);
       setAppointments(appRes.data);
       setChartData(chartRes.data);
+      
+      // Trigger AI insights generation
+      handleAIInsights(statsRes.data);
     } catch (error) {
       console.warn("API Offline, carregando dados de demonstração...");
-      // Dados de fallback para demonstração
+      const demoStats = { todayCount: 12, todayRevenue: 450, tomorrowCount: 8, monthlyRevenue: 8420, monthlyGoal: 10000, todayChange: "+12%", tomorrowChange: "-5%", monthlyChange: "+18%" };
       setStats([
-        { title: "Agendamentos Hoje", count: 12, revenue: "R$ 450,00", change: "+12%", color: "indigo", icon: <CalendarIcon size={24} />, hasEstimatedTooltip: true },
-        { title: "Agendamentos Amanhã", count: 8, revenue: "R$ 320,00", change: "-5%", color: "violet", icon: <Clock size={24} />, hasEstimatedTooltip: true },
-        { title: "Faturamento Mensal", count: "R$ 8.420", revenue: "Meta: R$ 10.000", change: "+18%", color: "emerald", icon: <TrendingUp size={24} />, hasEstimatedTooltip: false }
+        { title: "Agendamentos Hoje", count: demoStats.todayCount, revenue: "R$ 450,00", change: demoStats.todayChange, color: "indigo", icon: <CalendarIcon size={24} />, hasEstimatedTooltip: true },
+        { title: "Agendamentos Amanhã", count: demoStats.tomorrowCount, revenue: "R$ 320,00", change: demoStats.tomorrowChange, color: "violet", icon: <Clock size={24} />, hasEstimatedTooltip: true },
+        { title: "Faturamento Mensal", count: "R$ 8.420", revenue: "Meta: R$ 10.000", change: demoStats.monthlyChange, color: "emerald", icon: <TrendingUp size={24} />, hasEstimatedTooltip: false }
       ]);
       setAppointments([
         { id: '1', time: '09:00', customer: 'Ricardo Alves', service: 'Corte Degradê', value: '45.00' },
@@ -86,9 +94,17 @@ const Dashboard: React.FC = () => {
         { name: 'Seg', valor: 400 }, { name: 'Ter', valor: 600 }, { name: 'Qua', valor: 500 },
         { name: 'Qui', valor: 900 }, { name: 'Sex', valor: 1200 }, { name: 'Sáb', valor: 1500 }, { name: 'Dom', valor: 200 }
       ]);
+      handleAIInsights(demoStats);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAIInsights = async (data: any) => {
+    setAiLoading(true);
+    const insights = await getAIInsights(data);
+    setAiInsights(insights || "Foco total na agenda de hoje para maximizar resultados!");
+    setAiLoading(false);
   };
 
   React.useEffect(() => {
@@ -134,6 +150,31 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {/* AI Insights Card */}
+      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+          <Sparkles size={120} />
+        </div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+              <Bot size={24} />
+            </div>
+            <h2 className="text-xl font-bold">Insights da SmartIA</h2>
+          </div>
+          {aiLoading ? (
+            <div className="flex items-center gap-3">
+              <Loader2 className="animate-spin" size={20} />
+              <p className="text-indigo-100 font-medium italic">Analisando seu desempenho...</p>
+            </div>
+          ) : (
+            <p className="text-indigo-50 font-medium leading-relaxed italic whitespace-pre-wrap">
+              "{aiInsights}"
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group/card">
@@ -210,16 +251,17 @@ const Dashboard: React.FC = () => {
                     <button className="p-2 text-slate-300 hover:text-slate-600 opacity-0 group-hover:opacity-100"><MoreVertical size={18} /></button>
                   </div>
                 </div>
-              )) : (
-                <div className="text-center py-10 text-slate-400">Nenhum agendamento para hoje.</div>
-              )}
-            </div>
+              );
+            }) : (
+              <div className="text-center py-10 text-slate-400">Nenhum agendamento para hoje.</div>
+            )}
+          </div>
 
-            <div className="mt-6 flex justify-center border-t border-slate-50 pt-6">
-              <button onClick={() => setShowAll(!showAll)} className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50/50 px-6 py-2 rounded-full">
-                {showAll ? <><ChevronUp size={16} /> Recolher</> : <><ChevronRight size={16} /> Ver todos</>}
-              </button>
-            </div>
+          <div className="mt-6 flex justify-center border-t border-slate-50 pt-6">
+            <button onClick={() => setShowAll(!showAll)} className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50/50 px-6 py-2 rounded-full">
+              {showAll ? <><ChevronUp size={16} /> Recolher</> : <><ChevronRight size={16} /> Ver todos</>}
+            </button>
+          </div>
         </div>
 
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">

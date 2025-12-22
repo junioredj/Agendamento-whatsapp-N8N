@@ -1,9 +1,12 @@
 
 import React from 'react';
+// Fix: Use namespace import for react-router-dom to resolve missing member error
+import * as ReactRouter from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Check, Sparkles, Zap, ArrowRight, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { createStripeCheckout } from '../services/api';
+
+const { useNavigate } = ReactRouter;
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();

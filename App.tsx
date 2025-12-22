@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+// Fix: Use namespace import for react-router-dom to handle environment-specific export issues
+import * as ReactRouter from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import PricingPage from './pages/PricingPage';
 import LoginPage from './pages/LoginPage';
@@ -11,18 +12,27 @@ import ProfilePage from './pages/ProfilePage';
 import ScheduleBlockingPage from './pages/ScheduleBlockingPage';
 import ServicesPage from './pages/ServicesPage';
 import DashboardLayout from './components/DashboardLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+
+const { BrowserRouter, Routes, Route, Navigate } = ReactRouter;
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/precos" element={<PricingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registrar" element={<RegisterPage />} />
         
-        {/* Dashboard Routes with Sidebar */}
-        <Route element={<DashboardLayout />}>
+        {/* Rotas Protegidas - Só acessíveis se logado */}
+        <Route 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/servicos" element={<ServicesPage />} />
           <Route path="/integracoes" element={<IntegrationsPage />} />
@@ -32,7 +42,7 @@ const App: React.FC = () => {
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 };
 

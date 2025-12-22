@@ -5,11 +5,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SmartSchedule AI - Agendamento Inteligente</title>
+    
+    <!-- Tailwind Play CDN - Ideal para prototipagem rápida e visualização -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+    
+    <script>
+      // Configuração opcional do Tailwind para suportar as classes customizadas
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+
+    <style type="text/css">
       body {
         font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
       .glass {
         background: rgba(255, 255, 255, 0.7);
@@ -21,8 +42,11 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
+      /* Previne FOUC (Flash of Unstyled Content) */
+      [v-cloak] { display: none; }
     </style>
-  <script type="importmap">
+
+    <script type="importmap">
 {
   "imports": {
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
@@ -31,12 +55,16 @@
     "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
     "recharts": "https://esm.sh/recharts@^3.6.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "axios": "https://esm.sh/axios@^1.7.9"
+    "axios": "https://esm.sh/axios@^1.7.9",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0"
   }
 }
 </script>
-</head>
+  </head>
   <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
+    
+    <!-- ESTA LINHA É ESSENCIAL PARA O LAYOUT APARECER LOCALMENTE -->
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>

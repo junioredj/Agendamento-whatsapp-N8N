@@ -1,8 +1,11 @@
 
 import React from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+// Fix: Use namespace import for react-router-dom to resolve missing member errors
+import * as ReactRouter from 'react-router-dom';
 import { Sparkles, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
+
+const { Link, useNavigate, useSearchParams } = ReactRouter;
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();

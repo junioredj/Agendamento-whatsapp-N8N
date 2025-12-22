@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+// Fix: Use namespace import for react-router-dom to resolve missing member error
+import * as ReactRouter from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { 
   CheckCircle2, 
@@ -17,6 +18,8 @@ import {
   Smartphone,
   Star
 } from 'lucide-react';
+
+const { Link } = ReactRouter;
 
 const LandingPage: React.FC = () => {
   const steps = [

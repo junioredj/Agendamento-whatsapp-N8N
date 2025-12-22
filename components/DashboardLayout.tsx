@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+// Fix: Use namespace import for react-router-dom to resolve missing member errors
+import * as ReactRouter from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Blocks, 
@@ -11,6 +12,8 @@ import {
   CalendarX,
   Scissors
 } from 'lucide-react';
+
+const { Link, Outlet, useLocation } = ReactRouter;
 
 const DashboardLayout: React.FC = () => {
   const location = useLocation();
