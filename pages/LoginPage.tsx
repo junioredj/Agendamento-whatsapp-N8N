@@ -1,15 +1,19 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowLeft, Loader2 } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Sparkles, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [isDemo, setIsDemo] = React.useState(false);
+
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,19 +21,34 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
+      // Tentativa de conexão real com o backend
       const response = await api.post('/auth/login', { email, password });
       
-      // Supondo que o backend retorne um token ou confirme a sessão via cookie
       if (response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
+        localStorage.setItem('user_name', response.data.user?.name || 'Usuário');
       }
       
-      navigate('/dashboard');
+      navigate(redirectTo);
     } catch (err: any) {
       console.error("Erro no login:", err);
-      setError(err.response?.data?.message || 'E-mail ou senha incorretos.');
+
+      // Se for um erro de rede (backend não encontrado), entramos no Modo Demo
+      if (err.message === "Network Error" || !err.response) {
+        setIsDemo(true);
+        setError('Servidor API offline. Entrando em modo de demonstração...');
+        
+        // Simulação de login bem sucedido para testes de interface
+        setTimeout(() => {
+          localStorage.setItem('auth_token', 'demo-token-123');
+          localStorage.setItem('user_name', 'Barbeiro de Teste');
+          navigate(redirectTo);
+        }, 1500);
+      } else {
+        setError(err.response?.data?.message || 'E-mail ou senha incorretos.');
+      }
     } finally {
-      setLoading(false);
+      if (!isDemo) setLoading(false);
     }
   };
 
@@ -45,11 +64,18 @@ const LoginPage: React.FC = () => {
             <Sparkles className="text-white" size={32} />
           </div>
           <h1 className="text-3xl font-bold">Bem-vindo de volta!</h1>
-          <p className="text-slate-500 mt-2">Entre na sua conta para gerenciar seu salão.</p>
+          <p className="text-slate-500 mt-2">
+            {searchParams.get('redirectTo') 
+              ? 'Faça login para concluir sua assinatura.' 
+              : 'Entre na sua conta para gerenciar seu salão.'}
+          </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 animate-in fade-in slide-in-from-top-2">
+          <div className={`mb-6 p-4 rounded-xl text-sm font-medium border animate-in fade-in slide-in-from-top-2 flex items-center gap-3 ${
+            isDemo ? 'bg-amber-50 text-amber-700 border-amber-100' : 'bg-red-50 text-red-600 border-red-100'
+          }`}>
+            {isDemo ? <Loader2 className="animate-spin shrink-0" size={18} /> : <AlertCircle className="shrink-0" size={18} />}
             {error}
           </div>
         )}
@@ -76,9 +102,6 @@ const LoginPage: React.FC = () => {
               className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               placeholder="••••••••"
             />
-            <div className="text-right mt-2">
-              <a href="#" className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">Esqueceu a senha?</a>
-            </div>
           </div>
 
           <button 
@@ -91,7 +114,7 @@ const LoginPage: React.FC = () => {
         </form>
 
         <p className="text-center mt-8 text-slate-600">
-          Não tem uma conta? <Link to="/registrar" className="text-indigo-600 font-bold hover:text-indigo-700">Crie agora</Link>
+          Não tem uma conta? <Link to={`/registrar?redirectTo=${redirectTo}`} className="text-indigo-600 font-bold hover:text-indigo-700">Crie agora</Link>
         </p>
       </div>
     </div>

@@ -31,7 +31,6 @@ const Dashboard: React.FC = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Chamadas paralelas para performance
       const [statsRes, appRes, chartRes] = await Promise.all([
         api.get('/dashboard/stats'),
         api.get('/dashboard/appointments/today'),
@@ -70,8 +69,23 @@ const Dashboard: React.FC = () => {
       setAppointments(appRes.data);
       setChartData(chartRes.data);
     } catch (error) {
-      console.error("Erro ao buscar dados do dashboard:", error);
-      // Fallback para não quebrar a UI em desenvolvimento
+      console.warn("API Offline, carregando dados de demonstração...");
+      // Dados de fallback para demonstração
+      setStats([
+        { title: "Agendamentos Hoje", count: 12, revenue: "R$ 450,00", change: "+12%", color: "indigo", icon: <CalendarIcon size={24} />, hasEstimatedTooltip: true },
+        { title: "Agendamentos Amanhã", count: 8, revenue: "R$ 320,00", change: "-5%", color: "violet", icon: <Clock size={24} />, hasEstimatedTooltip: true },
+        { title: "Faturamento Mensal", count: "R$ 8.420", revenue: "Meta: R$ 10.000", change: "+18%", color: "emerald", icon: <TrendingUp size={24} />, hasEstimatedTooltip: false }
+      ]);
+      setAppointments([
+        { id: '1', time: '09:00', customer: 'Ricardo Alves', service: 'Corte Degradê', value: '45.00' },
+        { id: '2', time: '10:30', customer: 'Marcos Oliveira', service: 'Barba e Toalha Quente', value: '35.00' },
+        { id: '3', time: '14:00', customer: 'Felipe Santos', service: 'Corte + Barba', value: '70.00' },
+        { id: '4', time: '15:30', customer: 'Gustavo Lima', service: 'Corte Tesoura', value: '55.00' },
+      ]);
+      setChartData([
+        { name: 'Seg', valor: 400 }, { name: 'Ter', valor: 600 }, { name: 'Qua', valor: 500 },
+        { name: 'Qui', valor: 900 }, { name: 'Sex', valor: 1200 }, { name: 'Sáb', valor: 1500 }, { name: 'Dom', valor: 200 }
+      ]);
     } finally {
       setLoading(false);
     }

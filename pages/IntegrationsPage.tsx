@@ -6,37 +6,71 @@ import {
   Shield, 
   Zap, 
   CheckCircle2, 
-  Save, 
   Info,
   ExternalLink,
-  Smartphone
+  Loader2
 } from 'lucide-react';
+import { api } from '../services/api';
 
 const IntegrationsPage: React.FC = () => {
+  const [loading, setLoading] = React.useState(true);
   const [waLoading, setWaLoading] = React.useState(false);
-  const [waSuccess, setWaSuccess] = React.useState(false);
   const [gcLoading, setGcLoading] = React.useState(false);
-  const [gcSuccess, setGcSuccess] = React.useState(false);
+  const [status, setStatus] = React.useState({ whatsapp: false, google: false });
 
-  const handleSaveWA = (e: React.FormEvent) => {
+  // Estados dos formulários
+  const [waData, setWaData] = React.useState({ token: '', phoneId: '' });
+  const [gcData, setGcData] = React.useState({ clientId: '', clientSecret: '' });
+
+  const fetchIntegrations = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/integrations');
+      setWaData({ token: response.data.wa_token || '', phoneId: response.data.wa_phone_id || '' });
+      setGcData({ clientId: response.data.gc_client_id || '', clientSecret: response.data.gc_client_secret || '' });
+      setStatus({ whatsapp: !!response.data.wa_token, google: !!response.data.gc_client_id });
+    } catch (err) {
+      console.error("Erro ao buscar integrações:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchIntegrations();
+  }, []);
+
+  const handleSaveWA = async (e: React.FormEvent) => {
     e.preventDefault();
     setWaLoading(true);
-    setTimeout(() => {
+    try {
+      await api.post('/integrations/whatsapp', waData);
+      setStatus(prev => ({ ...prev, whatsapp: true }));
+      alert("Integração WhatsApp salva com sucesso!");
+    } catch (err) {
+      alert("Erro ao salvar integração WhatsApp.");
+    } finally {
       setWaLoading(false);
-      setWaSuccess(true);
-      setTimeout(() => setWaSuccess(false), 3000);
-    }, 1500);
+    }
   };
 
-  const handleSaveGC = (e: React.FormEvent) => {
+  const handleSaveGC = async (e: React.FormEvent) => {
     e.preventDefault();
     setGcLoading(true);
-    setTimeout(() => {
+    try {
+      await api.post('/integrations/google', gcData);
+      setStatus(prev => ({ ...prev, google: true }));
+      alert("Integração Google Agenda salva com sucesso!");
+    } catch (err) {
+      alert("Erro ao salvar integração Google.");
+    } finally {
       setGcLoading(false);
-      setGcSuccess(true);
-      setTimeout(() => setGcSuccess(false), 3000);
-    }, 1500);
+    }
   };
+
+  if (loading) {
+    return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>;
+  }
 
   return (
     <div className="max-w-6xl space-y-8 animate-in fade-in duration-500 pb-20">
@@ -54,7 +88,7 @@ const IntegrationsPage: React.FC = () => {
                 <p className="text-sm text-slate-500">API Business (Cloud API)</p>
               </div>
             </div>
-            {waSuccess && <CheckCircle2 className="text-emerald-500" size={24} />}
+            {status.whatsapp && <CheckCircle2 className="text-emerald-500" size={24} />}
           </div>
 
           <form onSubmit={handleSaveWA} className="space-y-6 flex-1">
@@ -63,6 +97,8 @@ const IntegrationsPage: React.FC = () => {
               <input 
                 type="password" 
                 required
+                value={waData.token}
+                onChange={(e) => setWaData({...waData, token: e.target.value})}
                 placeholder="EAAG..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
               />
@@ -73,6 +109,8 @@ const IntegrationsPage: React.FC = () => {
               <input 
                 type="text" 
                 required
+                value={waData.phoneId}
+                onChange={(e) => setWaData({...waData, phoneId: e.target.value})}
                 placeholder="1234567890..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
               />
@@ -88,22 +126,10 @@ const IntegrationsPage: React.FC = () => {
 
             <button 
               type="submit"
-              disabled={waLoading || waSuccess}
-              className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg ${
-                waSuccess 
-                  ? 'bg-emerald-600 text-white shadow-emerald-200' 
-                  : waLoading 
-                  ? 'bg-indigo-400 text-white cursor-wait'
-                  : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
-              }`}
+              disabled={waLoading}
+              className="w-full py-4 rounded-2xl font-bold bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200 transition-all flex items-center justify-center gap-2"
             >
-              {waLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : waSuccess ? (
-                <>Conectado!</>
-              ) : (
-                <>Conectar WhatsApp</>
-              )}
+              {waLoading ? <Loader2 className="animate-spin" /> : 'Salvar Configurações'}
             </button>
           </form>
         </div>
@@ -120,7 +146,7 @@ const IntegrationsPage: React.FC = () => {
                 <p className="text-sm text-slate-500">Sincronização de Agenda</p>
               </div>
             </div>
-            {gcSuccess && <CheckCircle2 className="text-emerald-500" size={24} />}
+            {status.google && <CheckCircle2 className="text-emerald-500" size={24} />}
           </div>
 
           <form onSubmit={handleSaveGC} className="space-y-6 flex-1">
@@ -129,6 +155,8 @@ const IntegrationsPage: React.FC = () => {
               <input 
                 type="text" 
                 required
+                value={gcData.clientId}
+                onChange={(e) => setGcData({...gcData, clientId: e.target.value})}
                 placeholder="seu-app.apps.googleusercontent.com"
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
               />
@@ -139,6 +167,8 @@ const IntegrationsPage: React.FC = () => {
               <input 
                 type="password" 
                 required
+                value={gcData.clientSecret}
+                onChange={(e) => setGcData({...gcData, clientSecret: e.target.value})}
                 placeholder="••••••••••••••••"
                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
               />
@@ -153,59 +183,14 @@ const IntegrationsPage: React.FC = () => {
 
             <button 
               type="submit"
-              disabled={gcLoading || gcSuccess}
-              className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg ${
-                gcSuccess 
-                  ? 'bg-emerald-600 text-white shadow-emerald-200' 
-                  : gcLoading 
-                  ? 'bg-indigo-400 text-white cursor-wait'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
-              }`}
+              disabled={gcLoading}
+              className="w-full py-4 rounded-2xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100 transition-all flex items-center justify-center gap-2"
             >
-              {gcLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : gcSuccess ? (
-                <>Sincronizado!</>
-              ) : (
-                <>Vincular Google Agenda</>
-              )}
+              {gcLoading ? <Loader2 className="animate-spin" /> : 'Vincular Google Agenda'}
             </button>
           </form>
         </div>
 
-      </div>
-
-      {/* IA Status Monitor */}
-      <div className="bg-slate-900 p-10 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 p-12 opacity-5 scale-150 rotate-12">
-          <Zap size={200} />
-        </div>
-        
-        <div className="relative z-10">
-          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <Zap className="text-indigo-400" /> Monitor da IA
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="space-y-2">
-              <p className="text-slate-400 text-xs font-bold uppercase">Status do Fluxo</p>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-sm font-medium">IA Pronta para Atender</span>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-slate-400 text-xs font-bold uppercase">Conexão WhatsApp</p>
-              <p className="text-sm font-medium">{waSuccess ? 'Verificada e Ativa' : 'Aguardando Credenciais'}</p>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-slate-400 text-xs font-bold uppercase">Sincronização Agenda</p>
-              <p className="text-sm font-medium">{gcSuccess ? 'Tempo Real Habilitado' : 'Não Vinculada'}</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
