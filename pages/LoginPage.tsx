@@ -1,15 +1,36 @@
 
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowLeft } from 'lucide-react';
+import { Sparkles, ArrowLeft, Loader2 } from 'lucide-react';
+import { api } from '../services/api';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, perform auth logic here
-    navigate('/dashboard');
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      
+      // Supondo que o backend retorne um token ou confirme a sessão via cookie
+      if (response.data.token) {
+        localStorage.setItem('auth_token', response.data.token);
+      }
+      
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error("Erro no login:", err);
+      setError(err.response?.data?.message || 'E-mail ou senha incorretos.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,13 +48,21 @@ const LoginPage: React.FC = () => {
           <p className="text-slate-500 mt-2">Entre na sua conta para gerenciar seu salão.</p>
         </div>
 
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100 animate-in fade-in slide-in-from-top-2">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Seu E-mail</label>
             <input 
               type="email" 
               required
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               placeholder="seu@email.com"
             />
           </div>
@@ -42,7 +71,9 @@ const LoginPage: React.FC = () => {
             <input 
               type="password" 
               required
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               placeholder="••••••••"
             />
             <div className="text-right mt-2">
@@ -52,23 +83,12 @@ const LoginPage: React.FC = () => {
 
           <button 
             type="submit" 
-            className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98]"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
           >
-            Entrar no Sistema
+            {loading ? <Loader2 className="animate-spin" /> : 'Entrar no Sistema'}
           </button>
         </form>
-
-        <div className="mt-8 relative">
-          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-100"></span></div>
-          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-slate-400">Ou continue com</span></div>
-        </div>
-
-        <div className="mt-6">
-          <button className="w-full bg-white border border-slate-200 py-3 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all font-medium text-slate-700">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-            Google
-          </button>
-        </div>
 
         <p className="text-center mt-8 text-slate-600">
           Não tem uma conta? <Link to="/registrar" className="text-indigo-600 font-bold hover:text-indigo-700">Crie agora</Link>
