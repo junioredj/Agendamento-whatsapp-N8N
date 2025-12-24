@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { Check, Sparkles, Zap, ArrowRight, Loader2 } from 'lucide-react';
-import { createStripeCheckout } from '../services/api';
+//import { createStripeCheckout } from '../services/api';
 
 const PricingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const PricingPage: React.FC = () => {
     }
 
     setLoading(true);
-    await createStripeCheckout();
+    //await createStripeCheckout();
     setLoading(false);
   };
 

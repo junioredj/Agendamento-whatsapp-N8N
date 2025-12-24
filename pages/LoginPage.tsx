@@ -2,7 +2,8 @@
 import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
-import { api, fetchCsrfToken } from "../services/api";
+import { api, fetchCsrfCookie} from "../services/api";
+import { useAuth } from "../context/AuthContext"; // ← IMPORTANTE: Adicione isso
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
+  const { login } = useAuth(); // ← Pegamos a função login do contexto
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -20,35 +22,34 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      // 1. Handshake do Cookie (Obrigatório)
-      await fetchCsrfToken();
+      // 1. Garante que o cookie CSRF esteja pronto (com await!)
+      await fetchCsrfCookie();
 
-      // 2. Tentar Login
-      // Se você usa Laravel Fortify ou Breeze, o endpoint é /login (WEB)
-      // Se criou manualmente na API, pode ser /api/login
-      // Ajustado para /login que é o mais comum para autenticação baseada em sessão (cookies)
-      const response = await api.post("/auth/login", {
+      // 2. Faz login no backend
+      const response = await api.post("/api/auth/login", {
         email,
         password,
       });
 
-      // 3. Sucesso
-      if (response.data.token) {
-        localStorage.setItem("auth_token", response.data.token);
-      }
-      
-      const userName = response.data.user?.name || email.split("@")[0];
-      localStorage.setItem("user_name", userName);
+      // 3. Atualiza o estado de autenticação no contexto
+      //    (a função login do contexto já faz a chamada /api/user e seta o user)
+      await login(email, password); // ← Isso atualiza o user no AuthContext
 
-      navigate(redirectTo);
+      // 4. Opcional: salva nome no localStorage (só para exibir no header, etc.)
+      if (response.data.name) {
+        localStorage.setItem("user_name", response.data.name);
+      }
+
+      // 5. Redireciona
+      navigate(redirectTo, { replace: true });
     } catch (err: any) {
-      console.error("Erro na requisição:", err);
-      
+      console.error("Erro no login:", err);
+
       if (err.code === "ERR_NETWORK") {
-        setError("Erro de rede: O servidor está offline ou há um erro de CORS no Laravel.");
+        setError("Erro de rede: verifique se o backend está online e CORS configurado.");
       } else {
         setError(
-          err.response?.data?.message || 
+          err.response?.data?.message ||
           err.response?.data?.errors?.email?.[0] ||
           "E-mail ou senha incorretos."
         );

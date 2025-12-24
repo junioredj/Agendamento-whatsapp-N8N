@@ -21,7 +21,7 @@ import {
   AreaChart, 
   Area 
 } from 'recharts';
-import { api, getAIInsights } from '../services/api';
+import { api } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const [showAll, setShowAll] = React.useState(false);
@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
 
   const handleAIInsights = async (data: any) => {
     setAiLoading(true);
-    const insights = await getAIInsights(data);
+    const insights = [];
     setAiInsights(insights || "Foco total na agenda de hoje para maximizar resultados!");
     setAiLoading(false);
   };
