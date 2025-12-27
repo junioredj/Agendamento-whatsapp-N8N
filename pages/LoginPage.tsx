@@ -1,8 +1,7 @@
-
 import React from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Sparkles, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
-import { api, fetchCsrfCookie} from "../services/api";
+import { api, fetchCsrfCookie } from "../services/api";
 import { useAuth } from "../context/AuthContext"; // ← IMPORTANTE: Adicione isso
 
 const LoginPage: React.FC = () => {
@@ -14,6 +13,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
 
   const { login } = useAuth(); // ← Pegamos a função login do contexto
+
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,9 +36,10 @@ const LoginPage: React.FC = () => {
       await login(email, password); // ← Isso atualiza o user no AuthContext
 
       // 4. Opcional: salva nome no localStorage (só para exibir no header, etc.)
-      if (response.data.name) {
-        localStorage.setItem("user_name", response.data.name);
-      }
+      const fullName = response.data.user.name;
+      const nomeESobrenome = fullName.split(" ").slice(0, 2).join(" ");
+      localStorage.setItem("user_name", nomeESobrenome);
+      localStorage.setItem("email", email);
 
       // 5. Redireciona
       navigate(redirectTo, { replace: true });
@@ -46,12 +47,14 @@ const LoginPage: React.FC = () => {
       console.error("Erro no login:", err);
 
       if (err.code === "ERR_NETWORK") {
-        setError("Erro de rede: verifique se o backend está online e CORS configurado.");
+        setError(
+          "Erro de rede: verifique se o backend está online e CORS configurado."
+        );
       } else {
         setError(
           err.response?.data?.message ||
-          err.response?.data?.errors?.email?.[0] ||
-          "E-mail ou senha incorretos."
+            err.response?.data?.errors?.email?.[0] ||
+            "E-mail ou senha incorretos."
         );
       }
     } finally {
@@ -61,8 +64,14 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <Link to="/" className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors group">
-        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+      <Link
+        to="/"
+        className="absolute top-8 left-8 flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors group"
+      >
+        <ArrowLeft
+          size={20}
+          className="group-hover:-translate-x-1 transition-transform"
+        />
         Voltar ao início
       </Link>
 
@@ -72,7 +81,10 @@ const LoginPage: React.FC = () => {
             <Sparkles className="text-white" size={32} />
           </div>
           <h1 className="text-3xl font-bold text-slate-900">Login</h1>
-          <p className="text-slate-500 mt-2">Identificamos um erro de conexão. Tente novamente após ajustar o backend.</p>
+          <p className="text-slate-500 mt-2">
+            Identificamos um erro de conexão. Tente novamente após ajustar o
+            backend.
+          </p>
         </div>
 
         {error && (
@@ -84,7 +96,9 @@ const LoginPage: React.FC = () => {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">E-mail</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+              E-mail
+            </label>
             <input
               type="email"
               required
@@ -95,7 +109,9 @@ const LoginPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Senha</label>
+            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+              Senha
+            </label>
             <input
               type="password"
               required
@@ -111,7 +127,11 @@ const LoginPage: React.FC = () => {
             disabled={loading}
             className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 shadow-xl transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 text-lg"
           >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : "Entrar"}
+            {loading ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : (
+              "Entrar"
+            )}
           </button>
         </form>
       </div>

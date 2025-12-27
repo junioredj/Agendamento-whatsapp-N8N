@@ -1,6 +1,6 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { api, fetchCsrfCookie} from '../services/api'; // sua instância do Axios configurada
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { api, fetchCsrfCookie } from "../services/api"; // sua instância do Axios configurada
 
 interface AuthContextType {
   user: any | null;
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const response = await api.get('/api/user'); // rota protegida no Laravel
+        const response = await api.get("/api/user"); // rota protegida no Laravel
         setUser(response.data);
       } catch (error) {
         setUser(null);
@@ -31,17 +31,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-  await fetchCsrfCookie(); // Uma vez só, com await
-  await api.post('/api/auth/login', { email, password }); 
-  const response = await api.get('/api/user'); 
-  setUser(response.data);
-};
+    await fetchCsrfCookie(); // Uma vez só, com await
+    await api.post("/api/auth/login", { email, password });
+    const response = await api.get("/api/user");
+    setUser(response.data);
+  };
 
   const logout = async () => {
-    await api.post('/logout'); // sua rota de logout no Laravel
-    setUser(null);
-    // Opcional: redirecionar para login
-    window.location.href = '/api/auth/login';
+    try {
+      await api.post("/api/auth/logout");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUser(null);
+    }
   };
 
   return (
@@ -53,6 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  if (!context)
+    throw new Error("useAuth deve ser usado dentro de AuthProvider");
   return context;
 };

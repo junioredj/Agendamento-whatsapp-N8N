@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,6 +12,9 @@ import {
   CheckCircle2,
   Loader2,
   Zap,
+  ZapOff,
+  ArrowRight,
+  PlusCircle,
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -27,6 +29,8 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [perfilData, setPerfilData] = React.useState<any>(null);
+  const [usuario_logado, setUsuarioLogado] = React.useState([]);
 
   const [formData, setFormData] = React.useState({
     name: "",
@@ -39,7 +43,10 @@ const ProfilePage: React.FC = () => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/me");
+      const response = await api.get("/api/profile");
+      setPerfilData(response.data);
+      setUsuarioLogado(response);
+
       setFormData({
         name: response.data.name || "",
         email: response.data.email || "",
@@ -50,15 +57,8 @@ const ProfilePage: React.FC = () => {
     } catch (err) {
       console.error("Erro ao buscar perfil:", err);
       // Fallback para demonstração se a API falhar
-      if (!formData.name) {
-        setFormData({
-            name: localStorage.getItem('user_name') || "Usuário",
-            email: "contato@barbearia.com",
-            number: "999999999",
-            business_name: "Minha Barbearia",
-            ddi: "+55",
-        });
-      }
+      const fallbackName = localStorage.getItem("user_name") || "Usuário";
+      setFormData([]);
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
           : null,
       };
 
-      await api.put("/me", payload);
+      await api.put("/api/profile", payload);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
@@ -94,10 +94,13 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_name');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await api.post("/api/auth/logout");
+    } catch (e) {}
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_name");
+    navigate("/login");
   };
 
   if (loading) {
@@ -108,6 +111,11 @@ const ProfilePage: React.FC = () => {
     );
   }
 
+  const activeSubscription = perfilData?.subscriptions?.find(
+    (sub: any) => sub.status === "active" || sub.status === "trialing"
+  );
+  const subscription = usuario_logado?.data?.subscriptions?.[0];
+  const isCanceled = subscription?.stripe_status === "canceled";
   return (
     <div className="max-w-4xl animate-in fade-in duration-500 pb-20">
       {/* Card Principal de Perfil */}
@@ -119,9 +127,9 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
           <div className="absolute top-4 right-4">
-             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20">
-                <ShieldCheck size={16} /> CONTA VERIFICADA
-              </div>
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20">
+              <ShieldCheck size={16} /> CONTA VERIFICADA
+            </div>
           </div>
         </div>
 
@@ -130,7 +138,9 @@ const ProfilePage: React.FC = () => {
             <h2 className="text-2xl font-black text-slate-800">
               {formData.name}
             </h2>
-            <p className="text-slate-500 font-medium">Configurações da sua conta profissional</p>
+            <p className="text-slate-500 font-medium">
+              Configurações da sua conta profissional
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -151,10 +161,12 @@ const ProfilePage: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2 ml-1">
-                  <Mail size={16} className="text-indigo-500" /> E-mail Profissional
+                  <Mail size={16} className="text-indigo-500" /> E-mail
+                  Profissional
                 </label>
                 <input
                   type="email"
+                  disabled
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -165,7 +177,8 @@ const ProfilePage: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2 ml-1">
-                  <Smartphone size={16} className="text-indigo-500" /> WhatsApp Conectado
+                  <Smartphone size={16} className="text-indigo-500" /> WhatsApp
+                  Conectado
                 </label>
                 <div className="flex gap-2">
                   <select
@@ -195,7 +208,8 @@ const ProfilePage: React.FC = () => {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-2 ml-1">
-                  <Building size={16} className="text-indigo-500" /> Nome da Barbearia / Salão
+                  <Building size={16} className="text-indigo-500" /> Nome da
+                  Barbearia / Salão
                 </label>
                 <input
                   type="text"
@@ -216,7 +230,7 @@ const ProfilePage: React.FC = () => {
               >
                 <LogOut size={20} /> Sair da Conta
               </button>
-              
+
               <button
                 type="submit"
                 disabled={saving}
@@ -244,36 +258,113 @@ const ProfilePage: React.FC = () => {
         <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
           <CreditCard className="text-indigo-600" /> Meu Plano
         </h3>
-        
-        <div className="bg-indigo-50 rounded-3xl p-6 flex flex-col md:flex-row justify-between items-center gap-6 border border-indigo-100">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-              <Zap size={28} />
-            </div>
-            <div>
-              <p className="text-indigo-900 font-black text-lg">Smart Completo</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <p className="text-indigo-600 text-sm font-bold">Assinatura Ativa</p>
+
+        {usuario_logado?.data?.subscriptions?.[0]?.stripe_subscription_id ? (
+          <div
+            className={`rounded-3xl p-6 flex flex-col md:flex-row justify-between items-center gap-6 border ${
+              isCanceled
+                ? "bg-amber-50 border-amber-100"
+                : "bg-indigo-50 border-indigo-100"
+            }`}
+          >
+            <div className="flex items-center gap-5">
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg ${
+                  isCanceled
+                    ? "bg-amber-500 shadow-amber-200"
+                    : "bg-indigo-600 shadow-indigo-200"
+                }`}
+              >
+                {isCanceled ? <ZapOff size={28} /> : <Zap size={28} />}
+              </div>
+              <div>
+                <p className="text-slate-900 font-black text-lg">
+                  {subscription?.plan?.name || "Plano Profissional"}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isCanceled
+                        ? "bg-amber-500"
+                        : "bg-emerald-500 animate-pulse"
+                    }`}
+                  ></span>
+                  <p
+                    className={`${
+                      isCanceled ? "text-amber-600" : "text-indigo-600"
+                    } text-sm font-bold`}
+                  >
+                    {isCanceled ? "Assinatura Cancelada" : "Assinatura Ativa"}
+                  </p>
+                </div>
               </div>
             </div>
+
+            <div className="text-center md:text-right">
+              <p className="text-slate-500 text-sm font-medium mb-1">
+                {isCanceled ? "Acesso garantido até" : "Próxima renovação"}
+              </p>
+              <p className="text-slate-900 font-black text-xl">
+                {isCanceled ? (
+                  new Date(
+                          usuario_logado.data.subscriptions[0].ends_at
+                        ).toLocaleDateString("pt-BR")
+                ) : (
+                  <>
+                    R${" "}
+                    {(subscription?.plan?.amount || 0).toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                    /mês
+                  </>
+                )}
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigate("/minha-assinatura")}
+              className={`bg-white px-6 py-3 rounded-xl font-bold transition-all shadow-sm border ${
+                isCanceled
+                  ? "text-amber-600 border-amber-200 hover:bg-amber-600 hover:text-white"
+                  : "text-indigo-600 border-indigo-200 hover:bg-indigo-600 hover:text-white"
+              }`}
+            >
+              Gerenciar Assinatura
+            </button>
           </div>
-          
-          <div className="text-center md:text-right">
-            <p className="text-slate-500 text-sm font-medium mb-1">Próxima renovação</p>
-            <p className="text-slate-900 font-black text-xl">R$ 69,00/mês</p>
+        ) : (
+          /* Empty State - Quando não há plano ativo */
+          <div className="bg-slate-50 rounded-3xl p-8 border-2 border-dashed border-slate-200 flex flex-col items-center text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-slate-300 shadow-sm border border-slate-100 mb-2">
+              <ZapOff size={32} />
+            </div>
+            <div className="max-w-sm">
+              <h4 className="text-lg font-black text-slate-800 mb-1">
+                Você não possui um plano ativo
+              </h4>
+              <p className="text-slate-500 text-sm font-medium">
+                Sua IA está desativada. Assine agora para automatizar seus
+                agendamentos via WhatsApp 24 horas por dia.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/precos")}
+              className="mt-2 bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all transform active:scale-95 group"
+            >
+              <PlusCircle size={20} />
+              Escolher um Plano
+              <ArrowRight
+                size={18}
+                className="group-hover:translate-x-1 transition-transform"
+              />
+            </button>
           </div>
-          
-          <button 
-            onClick={() => navigate('/precos')}
-            className="bg-white text-indigo-600 border border-indigo-200 px-6 py-3 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-          >
-            Gerenciar Assinatura
-          </button>
-        </div>
-        
+        )}
+
         <p className="mt-6 text-slate-400 text-xs text-center md:text-left flex items-center justify-center md:justify-start gap-2">
-           <ShieldCheck size={14} /> Pagamentos processados com segurança via Stripe
+          <ShieldCheck size={14} /> Pagamentos processados com segurança via
+          Stripe
         </p>
       </div>
     </div>

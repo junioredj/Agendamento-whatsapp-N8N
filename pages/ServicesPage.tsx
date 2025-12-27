@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { api } from "../services/api";
+import SmartIALoader from '../components/SmartIALoader';
 
 interface Service {
   id: string;
@@ -37,7 +38,7 @@ const ServicesPage: React.FC = () => {
   const fetchServices = async () => {
     try {
       setInitialLoading(true);
-      const response = await api.get("/services"); // Laravel já filtra pelo usuário logado
+      const response = await api.get("/api/services"); // Laravel já filtra pelo usuário logado
       setServices(response.data);
     } catch (err: any) {
       console.error("Erro ao buscar serviços:", err);
@@ -75,7 +76,7 @@ const ServicesPage: React.FC = () => {
 
     try {
       alert("O id é: " + id)
-      await api.delete(`/services/${id}`);
+      await api.delete(`/api/services/${id}`);
       setServices(services.filter((s) => s.id !== id));
     } catch (err) {
       alert("Erro ao excluir serviço. Tente novamente.");
@@ -121,12 +122,12 @@ const handleSave = async (e: React.FormEvent) => {
   try {
     let res;
     if (editingService) {
-      res = await api.put(`/services/${editingService.id}`, payload);
+      res = await api.put(`/api/services/${editingService.id}`, payload);
       setServices(services.map(s => 
         s.id === editingService.id ? res.data : s
       ));
     } else {
-      res = await api.post('/services', payload);
+      res = await api.post('/api/services', payload);
       setServices([...services, res.data]);
     }
 
@@ -146,9 +147,10 @@ const handleSave = async (e: React.FormEvent) => {
 
   if (initialLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="animate-spin text-indigo-600" size={48} />
-      </div>
+      <SmartIALoader 
+        message="Carregando dados"
+        submessage="Aguarde enquanto carregamos os seus serviços"
+      />
     );
   }
 

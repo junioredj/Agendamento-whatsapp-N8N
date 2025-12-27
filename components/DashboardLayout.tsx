@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { api} from '../services/api'; // sua instância do Axios configurada
 import { 
   LayoutDashboard, 
   Blocks, 
@@ -18,9 +19,11 @@ const DashboardLayout: React.FC = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token');
+  const handleLogout = async () => {
+    await api.post('/api/auth/logout'); // sua rota de logout no Laravel
+    localStorage.removeItem('auth_token'); 
     localStorage.removeItem('user_name');
+    localStorage.removeItem('email');
     navigate('/login');
   };
 
@@ -86,12 +89,9 @@ const DashboardLayout: React.FC = () => {
           <Link to="/perfil" className="block bg-slate-50 p-4 rounded-xl mb-4 hover:bg-indigo-50 transition-colors">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
-                J
+                {localStorage.getItem('user_name')?.charAt(0).toUpperCase()} 
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-800">João Silva</p>
-                <p className="text-xs text-slate-500">Barbeiro Premium</p>
-              </div>
+              {localStorage.getItem('user_name')}
             </div>
           </Link>
           <button 
