@@ -14,6 +14,8 @@ import ServicesPage from "./pages/ServicesPage";
 import DashboardLayout from "./components/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SubscriptionManagementPage from './pages/SubscriptionManagementPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +28,8 @@ const App: React.FC = () => {
           <Route path="/precos" element={<PricingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/registrar" element={<RegisterPage />} />
+          <Route path="/termos" element={<TermsPage />} />
+          <Route path="/privacidade" element={<PrivacyPage />} /> 
 
           {/* Rota de Sucesso pós-venda */}
           <Route

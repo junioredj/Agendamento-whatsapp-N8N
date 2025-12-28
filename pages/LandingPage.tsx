@@ -350,8 +350,8 @@ const LandingPage: React.FC = () => {
           </div>
           <p className="text-slate-400 text-sm">© 2024 SmartSchedule Inc. Todos os direitos reservados.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-indigo-400 transition-colors">Termos</a>
-            <a href="#" className="hover:text-indigo-400 transition-colors">Privacidade</a>
+            <Link to="/termos" className="hover:text-indigo-400 transition-colors">Termos</Link>
+            <Link to="/privacidade" className="hover:text-indigo-400 transition-colors">Privacidade</Link>
             <a href="#" className="hover:text-indigo-400 transition-colors">Suporte</a>
           </div>
         </div>
