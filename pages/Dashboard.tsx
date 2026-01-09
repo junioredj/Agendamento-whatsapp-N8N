@@ -10,6 +10,8 @@ import {
   Loader2,
   Sparkles,
   Bot,
+  MessageSquare,
+  Zap,
 } from "lucide-react";
 import {
   XAxis,
@@ -33,89 +35,118 @@ const Dashboard: React.FC = () => {
   const [aiLoading, setAiLoading] = React.useState<boolean>(false);
 
   const fetchData = async () => {
-
-    const statsRes = api.get("/api/dashboard/stats");
-    //const appRes  = api.get("/api/dashboard/appointments/today");
-    //const chartRes = api.get("/api/dashboard/revenue-chart");
-
-
-
-    /*try {
+    try {
       setLoading(true);
-      const [statsRes, appRes, chartRes] = await Promise.all([
-        api.get("/api/dashboard/stats"),
-        api.get("/api/dashboard/appointments/today"),
-        api.get("/api/dashboard/revenue-chart"),
-      ]);
 
+      const { data } = await api.get("/api/dashboard");
 
-      // Dentro do seu fetchData no React:
+      console.log(data);
+
+      // ======================
+      // CARDS (TOP STATS)
+      // ======================
       const statsData = [
+        //Card do valor financeiro para hoje
         {
-          title: "Agendamentos Hoje",
-          // Usamos Number() ou o sinal de + para garantir que é um número antes do toFixed
-          count: statsRes.data.todayCount,
-          revenue: `R$ ${(statsRes.data.todayRevenue || 0).toFixed(2)}`,
-          change: statsRes.data.todayChange,
+          title: data.cards.today.label,
+          count: data.cards.today.total,
+          revenue: `R$ ${data.cards.today.total_estimated}`,
+          sublabel: "Total estimado",
+          informacao:
+            "Valor finaceiro projetado para hoje com base nos agendamentos cadastrados",
+          // change: "+12%",
           color: "indigo",
           icon: <CalendarIcon size={24} />,
           hasEstimatedTooltip: true,
         },
-        // ... os demais itens seguem o mesmo padrão
-      ];
-      setStats(statsData);
-      setAppointments(appRes.data);
-      setChartData(chartRes.data);
-
-      // Trigger AI insights generation
-      handleAIInsights(statsRes.data);
-    } catch (error) {
-      console.warn("API Offline, carregando dados de demonstração...");
-      const demoStats = {
-        todayCount: 12,
-        todayRevenue: 450,
-        tomorrowCount: 8,
-        monthlyRevenue: 8420,
-        monthlyGoal: 10000,
-        todayChange: "+12%",
-        tomorrowChange: "-5%",
-        monthlyChange: "+18%",
-      };
-      setStats([
+        //Card do valor finaneiro para amanhã
         {
-          title: "Agendamentos Hoje",
-          count: demoStats.todayCount,
-          revenue: "R$ 450,00",
-          change: demoStats.todayChange,
-          color: "indigo",
-          icon: <CalendarIcon size={24} />,
-          hasEstimatedTooltip: true,
-        },
-        {
-          title: "Agendamentos Amanhã",
-          count: demoStats.tomorrowCount,
-          revenue: "R$ 320,00",
-          change: demoStats.tomorrowChange,
+          title: data.cards.tomorrow.label,
+          count: data.cards.tomorrow.total,
+          revenue: `R$ ${data.cards.tomorrow.total_estimated}`,
+          sublabel: "Total estimado",
+          informacao:
+            "Valor finaceiro projetado para amanhã com base nos agendamentos cadastrados",
+          // change: "-5%",
           color: "violet",
           icon: <Clock size={24} />,
           hasEstimatedTooltip: true,
         },
+        //Card de total faturado no mês
         {
-          title: "Faturamento Mensal",
-          count: "R$ 8.420",
-          revenue: "Meta: R$ 10.000",
-          change: demoStats.monthlyChange,
+          title: data.cards.monthly_revenue.label,
+          count: `R$ ${data.cards.monthly_revenue.total}`,
+          sublabel: "Total estimado",
+          informacao: "Valor finaceiro dos trabalhos já realizados nesse mês",
+          // change: "+18%",
           color: "emerald",
           icon: <TrendingUp size={24} />,
           hasEstimatedTooltip: false,
         },
-      ]);
-      setAppointments([]);
-      setChartData([]);
-      handleAIInsights(demoStats);
+
+        //Card de mensagens enviadas
+        {
+          title: "Mensagens Enviadas (30 dias)",
+          count: `${data.automation.messages_last_30_days.toLocaleString()} msgs`,
+          // sublabel: "Tempo Economizado",
+          // revenue: data.automation.time_saved.label,
+          // informacao: "Tempo economizado de envio de mensagens no WhatsApp",
+          // change: "+25%",
+          color: "amber",
+          icon: <Zap size={24} />,
+          hasEstimatedTooltip: false,
+        },
+        {
+          title: "Performance do Bot (30 dias)",
+          count: `${data.conversation_metrics_30d.conversion_rate}%`,
+          sublabel: "Taxa de conversão",
+          revenue: `
+    ${data.conversation_metrics_30d.abandoned} abandonadas • 
+    ${data.conversation_metrics_30d.transferred_to_human} humanas
+  `,
+          informacao:
+            "Conversão: conversas que viraram agendamento. Abandonadas: sem resposta final. Humanas: transferidas para atendente.",
+          color: "sky",
+          icon: <MessageSquare size={24} />,
+          hasEstimatedTooltip: true,
+        },
+      ];
+
+      setStats(statsData);
+
+      // ======================
+      // AGENDAMENTOS DE HOJE
+      // ======================
+      const formattedAppointments = data.appointments_today.map((item: any) => {
+        const [date, time] = item.date.split(" ");
+
+        return {
+          id: item.id,
+          time: time.slice(0, 5), // HH:mm
+          customer: item.client,
+          service: "Atendimento", // pode vir do backend depois
+          value: item.price,
+        };
+      });
+
+      setAppointments(formattedAppointments);
+
+      // ======================
+      // GRÁFICO SEMANAL
+      // ======================
+      const formattedChart = data.weekly_revenue.map((item: any) => ({
+        name: item.date,
+        valor: item.total,
+      }));
+
+      setChartData(formattedChart);
+
+      handleAIInsights(data.cards);
+    } catch (error) {
+      console.warn("Erro ao carregar dashboard", error);
     } finally {
       setLoading(false);
-    }*/
+    }
   };
 
   const handleAIInsights = async (data: any) => {
@@ -163,8 +194,8 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <SmartIALoader 
-        message="Analisando Métricas SmartIA" 
+      <SmartIALoader
+        message="Analisando Métricas SmartIA"
         submessage="Sincronizando agendamentos e faturamento em tempo real..."
       />
     );
@@ -172,34 +203,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* AI Insights Card */}
-      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-8 rounded-[2rem] shadow-xl text-white relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-          <Sparkles size={120} />
-        </div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
-              <Bot size={24} />
-            </div>
-            <h2 className="text-xl font-bold">Insights da SmartIA</h2>
-          </div>
-          {aiLoading ? (
-            <div className="flex items-center gap-3">
-              <Loader2 className="animate-spin" size={20} />
-              <p className="text-indigo-100 font-medium italic">
-                Analisando seu desempenho...
-              </p>
-            </div>
-          ) : (
-            <p className="text-indigo-50 font-medium leading-relaxed italic whitespace-pre-wrap">
-              "{aiInsights}"
-            </p>
-          )}
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (
           <div
             key={i}
@@ -211,7 +217,7 @@ const Dashboard: React.FC = () => {
               >
                 {stat.icon}
               </div>
-              <span
+              {/* <span
                 className={`text-xs font-bold px-2 py-1 rounded-full ${
                   stat.change.startsWith("+")
                     ? "bg-green-50 text-green-600"
@@ -219,7 +225,7 @@ const Dashboard: React.FC = () => {
                 }`}
               >
                 {stat.change}
-              </span>
+              </span> */}
             </div>
             <h3 className="text-slate-500 text-sm font-medium mb-1">
               {stat.title}
@@ -232,7 +238,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center gap-1.5 mt-1">
                   <p className="text-sm font-bold text-slate-400">
                     {stat.hasEstimatedTooltip && (
-                      <span className="mr-1">Total estimado:</span>
+                      <span className="mr-1">{stat.sublabel}</span>
                     )}
                     {stat.revenue}
                   </p>
@@ -243,8 +249,7 @@ const Dashboard: React.FC = () => {
                         className="text-slate-300 cursor-help hover:text-indigo-500 transition-colors"
                       />
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-slate-800 text-white text-[10px] rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50 text-center shadow-xl leading-relaxed border border-slate-700">
-                        Orçamento estimado com base nos agendamentos
-                        cadastrados.
+                        {stat.informacao}
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800"></div>
                       </div>
                     </div>

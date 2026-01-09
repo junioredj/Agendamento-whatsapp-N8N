@@ -1,6 +1,5 @@
 
 import React from 'react';
-// Fix: Use namespace import for react-router-dom to resolve missing member error
 import * as ReactRouter from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { 
@@ -16,7 +15,8 @@ import {
   Zap,
   ShieldCheck,
   Smartphone,
-  Star
+  Star,
+  Rocket
 } from 'lucide-react';
 
 const { Link } = ReactRouter;
@@ -27,33 +27,38 @@ const LandingPage: React.FC = () => {
       number: 1,
       icon: <MessageCircle size={28} />,
       iconColor: "bg-[#25D366]",
-      title: "Cliente envia mensagem",
-      desc: "Seu cliente entra em contato pelo WhatsApp solicitando um agendamento."
+      title: "Conecte seu WhatsApp",
+      desc: "Integração oficial e segura em menos de 60 segundos."
     },
     {
       number: 2,
       icon: <Bot size={28} />,
       iconColor: "bg-gradient-to-br from-[#6366f1] to-[#a855f7]",
-      title: "IA responde automaticamente",
-      desc: "Nosso agente de IA entende o pedido e oferece os horários disponíveis."
+      title: "Configure seus Serviços",
+      desc: "Adicione preços e durações. Nossa IA aprende tudo instantaneamente."
     },
     {
       number: 3,
       icon: <Calendar size={28} />,
       iconColor: "bg-[#10b981]",
-      title: "Horário é confirmado",
-      desc: "A IA agenda no sistema e sincroniza com Google Calendar automaticamente."
+      title: "Sincronize sua Agenda",
+      desc: "Conecte ao Google Calendar com 1 clique para evitar conflitos."
     },
     {
       number: 4,
-      icon: <CheckCircle2 size={28} />,
-      iconColor: "bg-[#6366f1]",
-      title: "Lembrete automático",
-      desc: "O cliente recebe confirmação e lembrete antes do atendimento."
+      icon: <Zap size={28} />,
+      iconColor: "bg-indigo-600",
+      title: "IA em Ação!",
+      desc: "Pronto! Em 5 minutos seu negócio atende e agenda sozinho."
     }
   ];
 
   const benefits = [
+    {
+      icon: <Rocket size={20} className="text-indigo-600" />,
+      title: "Configuração Relâmpago",
+      desc: "Sem complicações técnicas. Em 5 minutos sua IA já está atendendo clientes."
+    },
     {
       icon: <Clock size={20} className="text-indigo-600" />,
       title: "Atendimento 24/7",
@@ -66,43 +71,38 @@ const LandingPage: React.FC = () => {
     },
     {
       icon: <User size={20} className="text-indigo-600" />,
-      title: "Menos trabalho manual",
-      desc: "Pare de responder mensagens repetitivas. A IA cuida de tudo."
-    },
-    {
-      icon: <Zap size={20} className="text-indigo-600" />,
-      title: "Respostas instantâneas",
-      desc: "Clientes recebem resposta em segundos, não em horas ou dias."
+      title: "Fácil para você e o cliente",
+      desc: "Interface intuitiva. Seus clientes agendam sem precisar baixar nada."
     },
     {
       icon: <ShieldCheck size={20} className="text-indigo-600" />,
-      title: "Reduz faltas",
-      desc: "Lembretes automáticos diminuem significativamente os no-shows."
+      title: "Segurança Total",
+      desc: "Dados criptografados e integração oficial com Meta e Google."
     },
     {
       icon: <Smartphone size={20} className="text-indigo-600" />,
       title: "Tudo pelo WhatsApp",
-      desc: "Seus clientes já usam WhatsApp. Sem apps extras para baixar."
+      desc: "Use a ferramenta que seus clientes já amam e usam todo dia."
     }
   ];
 
   const testimonials = [
     {
-      text: "Depois do SmartSchedule, meus agendamentos aumentaram 40%. A IA responde na hora e meus clientes adoram!",
+      text: "Instalei entre um corte e outro. Em 5 minutos meus clientes já estavam agendando sozinhos. Sensacional!",
       name: "Carlos Silva",
       role: "Barbearia Vintage",
       initials: "CS",
       color: "bg-indigo-600"
     },
     {
-      text: "Antes eu passava horas respondendo WhatsApp. Agora a IA faz tudo e eu foco nas clientes.",
+      text: "Eu achava que seria difícil configurar, mas é muito simples. Recomendo para todos os colegas.",
       name: "Ana Paula",
       role: "Studio de Beleza AP",
       initials: "AP",
       color: "bg-violet-600"
     },
     {
-      text: "A integração com Google Calendar é perfeita. Nunca mais tive conflito de horário!",
+      text: "A IA é muito inteligente. Ela entende gírias e marca tudo certinho no meu Google Calendar.",
       name: "Marina Costa",
       role: "Espaço Nails",
       initials: "MC",
@@ -119,24 +119,27 @@ const LandingPage: React.FC = () => {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-indigo-100 rounded-full blur-3xl opacity-20 -z-10"></div>
         
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold mb-8 animate-bounce">
-            <Bot size={18} />
-            IA Revolucionando Agendamentos
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold mb-8">
+            <Sparkles size={18} className="text-indigo-600 animate-pulse" />
+            Configuração simples em menos de 5 minutos
           </div>
           <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-8 leading-tight">
-            Seu <span className="gradient-text">Agente de IA</span> que agenda por você no WhatsApp.
+            Sua Barbearia com <span className="gradient-text">IA no WhatsApp</span> em 5 minutos.
           </h1>
-          <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
-            Deixe que nossa inteligência artificial atenda seus clientes, tire dúvidas e agende horários 24 horas por dia. Menos trabalho manual, mais faturamento.
+          <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-medium">
+            Agendamento automático, humano e inteligente. Sem configurações complexas, sem perda de tempo. Comece a lucrar mais hoje mesmo.
           </p>
-          <div className="flex flex-col md:flex-row justify-center gap-4">
+          <div className="flex flex-col md:flex-row justify-center gap-4 mb-6">
             <Link to="/registrar" className="bg-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-indigo-200">
-              Começar Agora Gratuitamente <ArrowRight size={20} />
+              Ativar minha IA agora <ArrowRight size={20} />
             </Link>
             <Link to="/precos" className="bg-white text-slate-900 border border-slate-200 px-8 py-4 rounded-xl text-lg font-bold hover:bg-slate-50 transition-all">
               Ver Planos
             </Link>
           </div>
+          <p className="text-slate-400 text-sm font-bold flex items-center justify-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-500" /> Teste agora mesmo! 
+          </p>
         </div>
       </section>
 
@@ -145,17 +148,17 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
-              <h2 className="text-4xl font-bold mb-6 text-slate-900">Assista a IA em ação no WhatsApp</h2>
+              <h2 className="text-4xl font-bold mb-6 text-slate-900 leading-tight">Agendamento tão fácil quanto enviar um oi</h2>
               <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                Esqueça as respostas demoradas. Nossa IA responde instantaneamente, consulta sua agenda e fecha o horário. O cliente sai satisfeito e você foca no seu talento.
+                Nossa IA foi treinada para entender a linguagem natural dos seus clientes. Ela tira dúvidas sobre serviços, preços e horários, garantindo que sua agenda esteja sempre cheia.
               </p>
               
               <div className="space-y-4">
                 {[
-                  "Entendimento de linguagem natural (texto e áudio)",
-                  "Sincronização em tempo real com sua agenda",
-                  "Lembretes automáticos para reduzir faltas",
-                  "Suporte a reagendamentos inteligente"
+                  "Pronto para uso em 5 minutos",
+                  "Entendimento de gírias e áudios",
+                  "Sincronização com Google Calendar",
+                  "Configuração via painel intuitivo"
                 ].map((text, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="bg-indigo-100 p-1 rounded-full text-indigo-600">
@@ -180,20 +183,20 @@ const LandingPage: React.FC = () => {
                   </div>
                   <div className="flex-1 p-3 space-y-4 overflow-y-auto bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat">
                     <div className="bg-white p-2 rounded-lg rounded-tl-none shadow-sm max-w-[85%]">
-                      <p className="text-[12px]">Olá! Como posso te ajudar hoje? ✂️</p>
+                      <p className="text-[12px]">Fala mestre! Querendo dar aquele tapa no visual hoje? ✂️</p>
                     </div>
                     <div className="bg-[#dcf8c6] p-2 rounded-lg rounded-tr-none shadow-sm max-w-[85%] ml-auto">
-                      <p className="text-[12px]">Quero cortar o cabelo amanhã a tarde!</p>
+                      <p className="text-[12px]">Opa, bora! Tem vaga pra agora?</p>
                     </div>
                     <div className="bg-white p-2 rounded-lg rounded-tl-none shadow-sm max-w-[85%]">
-                      <p className="text-[12px]">Claro! Temos às 14:30 e às 16:00. Qual prefere?</p>
+                      <p className="text-[12px]">Tenho às 15:00 e 16:30. Qual fica melhor pra você?</p>
                     </div>
                     <div className="bg-[#dcf8c6] p-2 rounded-lg rounded-tr-none shadow-sm max-w-[85%] ml-auto">
-                      <p className="text-[12px]">16:00 tá perfeito.</p>
+                      <p className="text-[12px]">Pode ser 15h. Vou fazer cabelo e barba.</p>
                     </div>
                     <div className="bg-white p-2 rounded-lg rounded-tl-none shadow-sm max-w-[85%]">
-                      <p className="text-[12px] font-bold text-indigo-600">Confirmado! ✅</p>
-                      <p className="text-[12px]">Corte marcado para amanhã às 16:00. Te vejo lá!</p>
+                      <p className="text-[12px] font-bold text-indigo-600">Fechado! ✅</p>
+                      <p className="text-[12px]">Cabelo + Barba marcado para hoje às 15:00. Até já!</p>
                     </div>
                   </div>
                   <div className="bg-[#f0f0f0] p-2 flex gap-2">
@@ -210,12 +213,12 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. Como Funciona Section */}
+      {/* 3. Como Funciona Section (Rapidez) */}
       <section className="py-24 bg-slate-50 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Como a SmartSchedule Funciona?</h2>
-            <p className="text-slate-500 text-lg">Um fluxo simples, automático e extremamente eficiente.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">4 Passos e 5 Minutos</h2>
+            <p className="text-slate-500 text-lg">Tudo o que você precisa fazer para colocar sua barbearia no piloto automático.</p>
           </div>
           <div className="relative">
             <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -translate-y-1/2 z-0"></div>
@@ -248,9 +251,9 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
-              Por que escolher o <span className="gradient-text">SmartSchedule</span>?
+              Por que o <span className="gradient-text">SmartSchedule</span> é tão fácil?
             </h2>
-            <p className="text-slate-500 text-lg">Benefícios que transformam a gestão do seu negócio</p>
+            <p className="text-slate-500 text-lg">Projetado para quem quer agilidade e resultados, sem dor de cabeça.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -272,9 +275,9 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">
-              O que nossos clientes <span className="gradient-text">estão dizendo</span>
+              O que dizem quem <span className="gradient-text">configurou em minutos</span>
             </h2>
-            <p className="text-slate-500 text-lg">Veja como o SmartSchedule está transformando negócios</p>
+            <p className="text-slate-500 text-lg">Histórias reais de quem economizou tempo e ganhou agilidade.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -305,22 +308,22 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 6. Final CTA Section (New Section from Image) */}
+      {/* 6. Final CTA Section */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto bg-gradient-to-br from-[#8b5cf6] to-[#a855f7] rounded-[3rem] p-12 md:p-24 text-center text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
           <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_50%_50%,#fff,transparent)] pointer-events-none"></div>
           
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold mb-8">
-              <Sparkles size={16} /> Comece gratuitamente
+              <Rocket size={16} className="text-white" /> Instalação instantânea
             </div>
             
             <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
-              Pronto para automatizar seus <br className="hidden md:block" /> agendamentos?
+              Ainda agendando <br className="hidden md:block" /> manualmente?
             </h2>
             
             <p className="text-white/80 text-lg md:text-xl mb-12 max-w-3xl mx-auto font-medium">
-              Junte-se a centenas de profissionais que já economizam tempo e aumentam seus lucros com o SmartSchedule AI.
+              Não perca mais tempo. Configure agora em 5 minutos e veja sua barbearia trabalhar por você enquanto você cuida dos seus clientes.
             </p>
 
             <div className="flex flex-col md:flex-row justify-center gap-4">
@@ -328,13 +331,13 @@ const LandingPage: React.FC = () => {
                 to="/registrar" 
                 className="bg-white text-[#8b5cf6] px-10 py-5 rounded-2xl text-lg font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 shadow-xl"
               >
-                Criar conta grátis <ArrowRight size={20} />
+                Ativar em 5 minutos <ArrowRight size={20} />
               </Link>
               <Link 
                 to="/precos" 
                 className="bg-transparent border-2 border-white/30 text-white px-10 py-5 rounded-2xl text-lg font-bold hover:bg-white/10 transition-all"
               >
-                Ver planos e preços
+                Conhecer os planos
               </Link>
             </div>
           </div>
